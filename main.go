@@ -74,6 +74,7 @@ func (app *Application) GenerateRefreshToken(payload string) (string,error) {
 	return base64.URLEncoding.WithPadding(-1).EncodeToString(hash),err
 }
 
+//Генерация токенов и передача куки
 func (app *Application) NewTokens(user string, w http.ResponseWriter, r *http.Request) error {
 	s_token,payload,err := app.GenerateAccessToken(user)
 	if err != nil {
@@ -144,7 +145,7 @@ func (app *Application) VerifyRefreshToken(token,payload,fingerprint string) (st
 	return user.User,true
 }
 
-//Маршрут обновления токенов
+//Маршрут авторизации
 func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 	login := r.FormValue("login")
 	err := app.NewTokens(login,w,r)
@@ -157,7 +158,6 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 //Маршрут обновления токенов
 func (app *Application) Refresh(w http.ResponseWriter, r *http.Request) {
-	//var payload, found = "", false
 	tokenCache, err := r.Cookie("session_token")
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
@@ -185,6 +185,7 @@ func (app *Application) Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//Тест токенов
 func (app *Application) Test(w http.ResponseWriter, r *http.Request) {
 	var expire time.Time
 	found := false
@@ -214,7 +215,7 @@ func SecretGenerator() (string,error) {
 }
 
 func main() {
-	db, err := OpenDB("localhost",27017,"admin","t88m555")
+	db, err := OpenDB("localhost",27017,"admin","pass")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -236,6 +237,8 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+//MONGODB
 
 func OpenDB(ip string,port int,user,pass string) (*mongo.Client, error) {
 	cred := options.Credential{
